@@ -185,4 +185,25 @@ router.delete('/experience/:exp_id', auth, async (req, res) => {
     }
 });
 
+// @route  GET api/profile/github/:username
+// @desc   Get user repos from GitHub
+// @access Public
+router.get('/github/:username', async (req, res) => {
+    try {
+        const uri = encodeURI(`https://api.github.com/users/${req.params.username}/repos?per_page=5&sort=created:asc&client_id=${process.env.GITHUB_CLIENT_ID}&client_secret=${process.env.GITHUB_CLIENT_SECRET}`);
+        const headers = {
+            'user-agent': 'node.js'
+        };
+
+        const gitHubResponse = await fetch(uri, { headers });
+        if (gitHubResponse.status !== 200) {
+            return res.status(404).json({ msg: 'No GitHub profile found' });
+        }
+        const data = await gitHubResponse.json();
+        return res.json(data);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+});
 module.exports = router;
